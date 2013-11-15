@@ -1,8 +1,9 @@
-package github;
+package staff;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.json.*;
 
@@ -24,7 +25,7 @@ public class Hubbub {
 class HubPublisher implements Runnable {
     
     private final URL events;
-    private ArrayList<HubListener> listeners = new ArrayList<HubListener>();
+    private final List<HubListener> listeners = new CopyOnWriteArrayList<HubListener>();
     
     HubPublisher() throws MalformedURLException {
         events = new URL("https://api.github.com/events");
@@ -39,7 +40,6 @@ class HubPublisher implements Runnable {
         for (HubListener listener : listeners) {
             listener.event(event);
         }
-
     }
     
     public void run() {

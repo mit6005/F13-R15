@@ -1,4 +1,4 @@
-package github;
+package staff;
 
 import static javax.swing.GroupLayout.Alignment.BASELINE;
 
@@ -82,7 +82,7 @@ public class HubGUI extends JFrame {
             return;
         }
         
-        this.pub.addListener(widget);
+        pub.addListener(widget);
         
         labels.addComponent(label);
         widgets.addComponent(widget.repo);
@@ -110,7 +110,6 @@ class Widget implements HubListener {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     repo.setText(event.repo);
-                    
                 }
             });
         }

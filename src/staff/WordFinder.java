@@ -1,4 +1,4 @@
-package words;
+package staff;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -20,9 +21,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
-import words.WordFinder;
-import words.WordList;
+import staff.WordFinder;
+import staff.WordList;
 
 /**
  * WordFinder is an interface for searching a word list.
@@ -79,15 +81,14 @@ public class WordFinder extends JFrame {
         v2.addComponent(find);
 
         
-        /*
-         * add an action listener to `find' that outputs matching words
-         *         to the console
-         */
-        
-        // ...
         find.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                try {
                     doFind();
+                } catch (Exception e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
             }
         });
         
@@ -120,18 +121,44 @@ public class WordFinder extends JFrame {
         // ...
     }
     
-    private void doFind() {
+    private void doFind() throws Exception {
         String query = find.getText();
-        List<String> matches = words.find(query);
-        DefaultListModel listModel = (DefaultListModel) list.getModel();
-        listModel.removeAllElements();
-        for (String match : matches) {
-            listModel.addElement(match);
+        FindWorker findMatches = new FindWorker(query);
+        findMatches.execute();
+    }
+    
+    class FindWorker extends SwingWorker<List<String>, Object> {
+        
+        private String query;
+        
+        public FindWorker(String query) {
+            this.query = query;
         }
         
-        //updateCounter(query);
-        find.selectAll();
-        find.grabFocus();
+        @Override
+        protected List<String> doInBackground() throws Exception {
+            return words.find(query);
+        }   
+        
+        @Override
+        protected void done() {
+            DefaultListModel listModel = (DefaultListModel) list.getModel();
+            listModel.removeAllElements();
+            List<String> matches;
+            try {
+                matches = get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                return;
+            }
+            for (String match : matches) {
+                listModel.addElement(match);
+            }
+            
+            //updateCounter(query);
+            find.selectAll();
+            find.grabFocus();
+        }
     }
     
     /**
